@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pastil Rice Davao offers delicious, freshly made pastil rice and rice meals delivered across Davao City."
+    />
+    <title>Pastil Rice Davao | Fresh & Flavorful</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="auth-overlay" id="authOverlay">
+      <div class="auth-card">
+        <div class="auth-header">
+          <span class="eyebrow">Client access</span>
+          <h2 id="authTitle">Welcome back</h2>
+          <p id="authSubtitle">Sign in to access the Pastil Rice Davao dashboard.</p>
+        </div>
+
+        <div class="auth-toggle" aria-label="Authentication mode">
+          <button class="mode-btn active" data-mode="login" type="button">Log In</button>
+          <button class="mode-btn" data-mode="signup" type="button">Sign Up</button>
+        </div>
+
+        <form id="authForm" class="auth-form">
+          <label class="field" id="nameField" style="display: none;">
+            <span>Full name</span>
+            <input type="text" id="fullName" placeholder="Your full name" />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="email" placeholder="you@example.com" required />
+          </label>
+
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="password" placeholder="Enter your password" required />
+          </label>
+
+          <button type="submit" class="primary-btn auth-submit-btn" id="authSubmitBtn">Log In</button>
+          <p class="auth-message" id="authMessage" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+
+    <div class="app-shell" id="appShell">
+      <header class="site-header">
+        <div class="container nav">
+          <div class="brand">
+            <div class="brand-mark">P</div>
+            <div>
+              <span class="brand-name">Pastil Rice</span>
+              <small>Davao City</small>
+            </div>
+          </div>
+
+          <nav class="main-nav">
+            <a href="#home">Home</a>
+            <a href="#menu">Menu</a>
+            <a href="#about">About</a>
+            <a href="#reviews">Reviews</a>
+            <a href="#contact">Contact</a>
+          </nav>
+
+          <div class="nav-actions">
+            <button class="ghost-btn" type="button" id="logoutBtn">Logout</button>
+            <button class="cart-btn" type="button" aria-label="Open cart">
+              <span>Cart</span>
+              <span class="cart-count" id="cartCount">0</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" id="home">
+          <div class="container hero-content">
+            <div class="hero-copy">
+              <span class="eyebrow">Freshly cooked every day</span>
+              <h1>Pastil rice that feels like home in Davao City.</h1>
+              <p>
+                Crispy, savory, and generously packed. Perfect for busy days,
+                meriendas, and family gatherings.
+              </p>
+              <div class="hero-actions">
+                <a href="#menu" class="primary-btn">Order Now</a>
+                <a href="#about" class="secondary-btn">Our Story</a>
+              </div>
+              <ul class="hero-stats">
+                <li><strong>2,500+</strong><span>Orders delivered</span></li>
+                <li><strong>30 min</strong><span>Fast service</span></li>
+                <li><strong>4.9/5</strong><span>Customer rating</span></li>
+              </ul>
+            </div>
+
+            <div class="hero-visual">
+              <div class="product-showcase">
+                <div class="showcase-card feature-card">
+                  <span id="showcaseCategory">Best Seller</span>
+                  <h3 id="showcaseName">Beef Pastil</h3>
+                  <p id="showcasePrice">PHP 120</p>
+                </div>
+                <img
+                  id="showcaseImage"
+                  src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80"
+                  alt="Beef Pastil"
+                />
+                <div class="mini-badge">
+                  <strong>Fresh</strong>
+                  <span>Made daily</span>
+                </div>
+                <button type="button" class="showcase-arrow showcase-prev" id="showcasePrev" aria-label="Previous product">‹</button>
+                <button type="button" class="showcase-arrow showcase-next" id="showcaseNext" aria-label="Next product">›</button>
+                <div class="showcase-dots" id="showcaseDots" aria-label="Product slideshow navigation"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="promo-strip">
+          <div class="container promo-grid">
+            <div>
+              <strong>Free delivery</strong>
+              <span>Within Davao City for orders above PHP 500</span>
+            </div>
+            <div>
+              <strong>Cash on delivery</strong>
+              <span>Easy and convenient payments</span>
+            </div>
+            <div>
+              <strong>Party packs</strong>
+              <span>Perfect for office lunches and gatherings</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="menu-section" id="menu">
+          <div class="container">
+            <div class="section-heading">
+              <span class="eyebrow">Popular picks</span>
+              <h2>Choose your favorite pastil</h2>
+            </div>
+
+            <div class="filters" aria-label="Product categories">
+              <button class="filter-btn active" data-category="all" type="button">All</button>
+              <button class="filter-btn" data-category="beef" type="button">Beef</button>
+              <button class="filter-btn" data-category="chicken" type="button">Chicken</button>
+              <button class="filter-btn" data-category="seafood" type="button">Seafood</button>
+              <button class="filter-btn" data-category="combo" type="button">Combo</button>
+            </div>
+
+            <div class="product-grid" id="productGrid"></div>
+            <div class="menu-checkout-action">
+              <button type="button" class="primary-btn proceed-checkout-btn" id="proceedCheckoutBtn">Proceed to Checkout</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="why-us" id="about">
+          <div class="container split-layout">
+            <div class="feature-image">
+              <img
+                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80"
+                alt="Restaurant setting in Davao"
+              />
+            </div>
+            <div class="feature-copy">
+              <span class="eyebrow">Why choose us</span>
+              <h2>Made with Davao flavor, heart, and care.</h2>
+              <p>
+                We serve authentic, satisfying pastil rice prepared using quality
+                ingredients and traditional flavor combinations that keep customers
+                coming back for more.
+              </p>
+              <ul class="check-list">
+                <li>Freshly cooked daily</li>
+                <li>Locally inspired flavors</li>
+                <li>Affordable family bundles</li>
+                <li>Reliable Davao delivery</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="steps">
+          <div class="container">
+            <div class="section-heading centered">
+              <span class="eyebrow">How it works</span>
+              <h2>Easy ordering, quick delivery</h2>
+            </div>
+
+            <div class="step-grid">
+              <article class="step-card">
+                <span>1</span>
+                <h3>Pick your items</h3>
+                <p>Select your favorite pastil flavors and add to cart.</p>
+              </article>
+              <article class="step-card">
+                <span>2</span>
+                <h3>Confirm order</h3>
+                <p>Choose delivery location and payment method.</p>
+              </article>
+              <article class="step-card">
+                <span>3</span>
+                <h3>Enjoy hot meals</h3>
+                <p>Fresh food arrives in time for lunch or dinner.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="reviews" id="reviews">
+          <div class="container">
+            <div class="section-heading centered">
+              <span class="eyebrow">Customer loves</span>
+              <h2>What Davao customers say</h2>
+            </div>
+
+            <div class="testimonial-grid">
+              <article class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>“The beef pastil is so flavorful and filling. Delivery was fast and the packaging was neat.”</p>
+                <h4>Maria C.</h4>
+              </article>
+              <article class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>“Perfect for our office lunch. The combo pack saves us time and money.”</p>
+                <h4>Rafael T.</h4>
+              </article>
+              <article class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>“Very affordable and consistent quality. This is our go-to pastil place in Davao.”</p>
+                <h4>Jessa P.</h4>
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer" id="contact">
+        <div class="container footer-grid">
+          <div>
+            <div class="brand footer-brand">
+              <div class="brand-mark">P</div>
+              <div>
+                <span class="brand-name">Pastil Rice</span>
+                <small>Davao City</small>
+              </div>
+            </div>
+            <p>
+              Serving fresh and flavorful rice meals across Davao City with warm, family-style hospitality.
+            </p>
+          </div>
+
+          <div>
+            <h3>Contact</h3>
+            <ul>
+              <li>📍 Davao City, Philippines</li>
+              <li>📞 +63 912 345 6789</li>
+              <li>✉️ hello@pastilriceph.com</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Business Hours</h3>
+            <ul>
+              <li>Mon - Sat: 8:00 AM - 9:00 PM</li>
+              <li>Sun: 9:00 AM - 7:00 PM</li>
+              <li>Same-day delivery available</li>
+            </ul>
+          </div>
+        </div>
+        <div class="container bottom-bar">
+          <p>© 2026 Pastil Rice Davao. All rights reserved.</p>
+        </div>
+      </footer>
+
+      <aside class="cart-panel" id="cartPanel" aria-label="Shopping cart">
+        <div class="cart-header">
+          <h3>Your Cart</h3>
+          <button type="button" class="close-cart" aria-label="Close cart">×</button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-summary">
+          <div>
+            <span>Subtotal</span>
+            <strong id="cartSubtotal">PHP 0.00</strong>
+          </div>
+          <button type="button" class="checkout-btn">Checkout</button>
+        </div>
+      </aside>
+
+      <div class="product-detail-overlay hidden" id="productDetailOverlay">
+        <div class="product-detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailProductName">
+          <button type="button" class="product-detail-close" id="productDetailClose" aria-label="Close product details">×</button>
+          <img id="detailProductImage" class="product-detail-image" src="" alt="" />
+          <div class="product-detail-content">
+            <div class="product-topline">
+              <span class="product-category" id="detailProductCategory"></span>
+              <span class="rating" id="detailProductRating"></span>
+            </div>
+            <h2 id="detailProductName"></h2>
+            <p id="detailProductDescription"></p>
+            <div class="product-detail-footer">
+              <strong id="detailProductPrice"></strong>
+              <button type="button" class="primary-btn" id="detailAddButton">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quantity-overlay hidden" id="quantityOverlay">
+        <div class="quantity-modal" role="dialog" aria-modal="true" aria-labelledby="quantityProductName">
+          <button type="button" class="product-detail-close" id="quantityClose" aria-label="Close quantity selector">×</button>
+          <img id="quantityProductImage" class="quantity-product-image" src="" alt="" />
+          <div class="quantity-content">
+            <span class="product-category" id="quantityProductCategory"></span>
+            <h2 id="quantityProductName"></h2>
+            <p id="quantityProductPrice"></p>
+            <div class="quantity-picker" aria-label="Choose quantity">
+              <button type="button" id="quantityDecrease" aria-label="Decrease quantity">−</button>
+              <output id="quantityValue" aria-live="polite">1</output>
+              <button type="button" id="quantityIncrease" aria-label="Increase quantity">+</button>
+            </div>
+            <button type="button" class="primary-btn quantity-add-btn" id="quantityAddButton">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="checkout-overlay hidden" id="checkoutOverlay">
+      <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+        <div class="checkout-header">
+          <button type="button" class="mini-back-btn" id="checkoutBackBtn">←</button>
+          <button type="button" class="view-order-btn">View Order</button>
+        </div>
+
+        <div class="checkout-body">
+          <div class="order-status-card">
+            <div class="status-topline">
+              <h2 id="checkoutTitle">Order Placed</h2>
+              <span class="status-badge active" id="orderStatusBadge" data-status="Preparing" aria-live="polite">
+                Preparing
+              </span>
+            </div>
+
+            <div class="order-meta">
+              <span>Order #<strong id="checkoutOrderNumber">454332</strong></span>
+              <span>Arrival 2:30 PM</span>
+            </div>
+
+            <div class="order-track">
+              <span class="track-segment active"></span>
+              <span class="track-segment active"></span>
+              <span class="track-segment"></span>
+              <span class="track-segment"></span>
+            </div>
+
+            <div class="map-box" aria-label="Live GPS delivery route map">
+              <div id="deliveryMap" class="delivery-map"></div>
+              <div class="map-controls" aria-hidden="true">
+                <span class="map-live-dot"></span>
+                Live GPS
+              </div>
+            </div>
+
+            <form id="deliveryForm" class="delivery-form" novalidate>
+              <div class="field-group two-up">
+                <label class="field compact-field">
+                  <span>Full name</span>
+                  <input id="deliveryFullName" type="text" placeholder="Your full name" required />
+                </label>
+                <label class="field compact-field">
+                  <span>Mobile number</span>
+                  <input id="deliveryPhone" type="tel" placeholder="09XXXXXXXXX" required />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>Delivery address</span>
+                <input id="deliveryAddress" type="text" placeholder="House/Unit no., street, barangay" required />
+              </label>
+
+              <label class="field">
+                <span>Landmark / nearest reference</span>
+                <input id="deliveryLandmark" type="text" placeholder="Example: Near Davao Doctors Hospital" required />
+              </label>
+
+              <label class="field">
+                <span>Delivery instructions</span>
+                <textarea id="deliveryInstructions" rows="3" placeholder="Optional notes for rider"></textarea>
+              </label>
+
+              <p id="deliveryMessage" class="delivery-message" aria-live="polite"></p>
+
+              <button type="submit" class="primary-btn place-order-btn">Place Order</button>
+            </form>
+
+            <div class="info-block">
+              <h3>Delivery Address</h3>
+              <p id="checkoutAddressDisplay">Please complete the form before placing the order.</p>
+            </div>
+
+            <div class="info-block instruction-block">
+              <h3>Delivery Instruction</h3>
+              <p>Ring the gate bell after arrival, if no one answers call this number <strong id="deliveryPhoneDisplay">your mobile number</strong></p>
+            </div>
+          </div>
+
+          <div class="checkout-summary-card hidden" id="checkoutSummaryCard">
+            <div class="summary-header">
+              <h3>Order Summary</h3>
+              <button type="button" class="summary-close" id="summaryClose">×</button>
+            </div>
+
+            <div class="summary-order-id">
+              <span>Order #<strong id="summaryOrderNumber">454332</strong></span>
+              <span>Nov. 01 - 1:56 PM</span>
+            </div>
+
+            <div class="summary-items" id="summaryItems"></div>
+
+            <div class="totals">
+              <div class="total-row discount"><span>Discount</span><strong id="discountValue">-Rs. 0.00</strong></div>
+              <div class="total-row"><span>Service Charge</span><strong id="serviceCharge">Rs. 145.50</strong></div>
+              <div class="total-row grand-total"><span>Sub Total</span><strong id="grandTotal">Rs. 0.00</strong></div>
+            </div>
+
+            <div class="summary-note">A detailed copy of this receipt has been sent to your registered email address.</div>
+          </div>
+        </div>
+
+        <div class="feedback-overlay hidden" id="feedbackOverlay">
+          <div class="feedback-card" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+            <div class="feedback-icon">&#10003;</div>
+            <span class="eyebrow">Order completed</span>
+            <h2 id="feedbackTitle">How was your order?</h2>
+            <p>Your pastil has been delivered. Share a quick review to help us serve you better.</p>
+
+            <div class="rating-picker" role="radiogroup" aria-label="Rate your order">
+              <button type="button" class="rating-star" data-rating="1" aria-label="1 star">&#9733;</button>
+              <button type="button" class="rating-star" data-rating="2" aria-label="2 stars">&#9733;</button>
+              <button type="button" class="rating-star" data-rating="3" aria-label="3 stars">&#9733;</button>
+              <button type="button" class="rating-star" data-rating="4" aria-label="4 stars">&#9733;</button>
+              <button type="button" class="rating-star" data-rating="5" aria-label="5 stars">&#9733;</button>
+            </div>
+            <textarea id="feedbackText" rows="3" placeholder="Tell us about your meal (optional)"></textarea>
+            <p id="feedbackMessage" class="feedback-message" aria-live="polite"></p>
+            <div class="feedback-actions">
+              <button type="button" class="secondary-btn" id="orderAgainBtn">Shop / Order Again</button>
+              <button type="button" class="primary-btn" id="submitFeedbackBtn">Submit Review</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="script.js"></script>
+  </body>
+</html>

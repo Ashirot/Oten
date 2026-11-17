@@ -1,58 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Pastil Rice Davao — Database Systems 1 Final Project
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> **Project Title:** Design and Development of a Database-Driven Information System  
+> **Course:** Database Systems 1 (Topic 2: Inventory and Sales Management System)  
+> **Architecture:** Decoupled Full-Stack Architecture  
+> - **Backend:** Laravel 11/12 REST API (`/backend`)  
+> - **Frontend:** ReactJS 19 with Tailwind CSS 4 (`/frontend`)  
+> - **Database:** MySQL 8.0 InnoDB Engine  
+> - **Documentation:** Academic Deliverables (`/docs`)  
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📁 Repository Folder Structure
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```text
+Project/
+├── backend/                  # Laravel REST API Application (PHP 8.4)
+│   ├── app/                  # Controllers, Models, Middleware
+│   ├── config/               # Database, CORS, Sanctum configuration
+│   ├── database/             # Migrations, Seeders, Raw SQL scripts
+│   │   ├── migrations/       # Schema, Check Constraints, Routines & Triggers
+│   │   ├── seeders/          # DatabaseSeeder with realistic master data
+│   │   └── sql/              # 5 Pure SQL deliverables (.sql)
+│   ├── routes/               # api.php (40 REST endpoints)
+│   ├── .env                  # MySQL connection settings
+│   └── artisan               # Artisan CLI
+│
+├── frontend/                 # Standalone ReactJS 19 Application
+│   ├── src/
+│   │   ├── components/       # Storefront, Modals, Admin Dashboard, DB Lab
+│   │   ├── services/         # api.js API client
+│   │   ├── App.jsx           # Main App component
+│   │   ├── main.jsx          # React DOM entry point
+│   │   └── index.css         # Tailwind CSS 4 configuration
+│   ├── index.html            # HTML shell with Leaflet GPS mapping & Poppins font
+│   ├── package.json          # Vite, React 19, Tailwind CSS 4, Lucide Icons
+│   └── vite.config.js        # Vite dev server with /api proxy to backend
+│
+├── docs/                     # 13 Final Project Academic Deliverables
+│   ├── 01_PROJECT_PROPOSAL.md
+│   ├── 02_DATABASE_DESIGN_AND_ERD.md
+│   ├── 03_SQL_IMPLEMENTATION_AND_ROUTINES.md
+│   ├── 04_QUERY_OPTIMIZATION_AND_TRANSACTIONS.md
+│   ├── 05_ADDITIONAL_DATABASE_CONCEPTS.md
+│   ├── 06_TESTING_RESULTS_AND_TEST_MATRIX.md
+│   ├── 07_USER_GUIDE.md
+│   ├── 08_PRESENTATION_SLIDES_OUTLINE.md
+│   ├── 09_LIVE_DEMO_SCRIPT.md
+│   └── FINAL_PROJECT_DOCUMENTATION.md
+│
+└── legacy_static/            # Original static HTML/JS/CSS files (archived)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🚀 How to Run the Application
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 1. Start Backend (Laravel REST API)
+```bash
+cd backend
 
-## Code of Conduct
+# Setup database (if first time)
+php artisan migrate:fresh --seed
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Start backend server
+php artisan serve
+```
+Backend runs at: **http://127.0.0.1:8000**
 
-## Security Vulnerabilities
+### 2. Start Frontend (ReactJS + Tailwind CSS)
+In a new terminal window:
+```bash
+cd frontend
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Install dependencies (if first time)
+npm install
 
-## License
+# Start Vite dev server
+npm run dev
+```
+Frontend runs at: **http://127.0.0.1:5173**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 🔑 1-Click Evaluation Accounts
+In the frontend navbar, click **Sign In** and use the 1-click evaluation buttons:
+- **👑 Admin:** `admin@pastildavao.com` / `admin123` (Full catalog, stored procedure restocking, business reports, database laboratory)
+- **💼 Staff:** `staff@pastildavao.com` / `staff123` (Order fulfillment stage updates, catalog inspection)
+- **🛒 Customer:** `maria@example.com` / `password123` (Menu ordering, checkout with Davao City GPS delivery map, review submission)
+
+---
+
+## 📋 Academic Deliverables Checklist (13/13 Completed)
+
+1. [x] **Project Proposal:** [docs/01_PROJECT_PROPOSAL.md](docs/01_PROJECT_PROPOSAL.md)
+2. [x] **Complete Documentation:** [docs/FINAL_PROJECT_DOCUMENTATION.md](docs/FINAL_PROJECT_DOCUMENTATION.md)
+3. [x] **ERD & Relational Schema:** [docs/02_DATABASE_DESIGN_AND_ERD.md](docs/02_DATABASE_DESIGN_AND_ERD.md)
+4. [x] **3NF Normalization Proof:** [docs/02_DATABASE_DESIGN_AND_ERD.md](docs/02_DATABASE_DESIGN_AND_ERD.md#4-normalization-analysis-unf-to-3nf)
+5. [x] **Data Dictionary:** [docs/02_DATABASE_DESIGN_AND_ERD.md](docs/02_DATABASE_DESIGN_AND_ERD.md#5-data-dictionary)
+6. [x] **DDL Schema & Seed Data:** [backend/database/sql/01_schema_and_seed.sql](backend/database/sql/01_schema_and_seed.sql)
+7. [x] **Stored Routines, Triggers & Queries:** [backend/database/sql/02_procedures_functions_triggers.sql](backend/database/sql/02_procedures_functions_triggers.sql) & [03_complex_queries_and_set_operations.sql](backend/database/sql/03_complex_queries_and_set_operations.sql)
+8. [x] **Working Source Code:** [backend/](backend/) and [frontend/](frontend/)
+9. [x] **Query Optimization Evidence (EXPLAIN):** [backend/database/sql/04_query_optimization.sql](backend/database/sql/04_query_optimization.sql) & [docs/04_QUERY_OPTIMIZATION_AND_TRANSACTIONS.md](docs/04_QUERY_OPTIMIZATION_AND_TRANSACTIONS.md)
+10. [x] **Testing Matrix (18/18 Passed):** [docs/06_TESTING_RESULTS_AND_TEST_MATRIX.md](docs/06_TESTING_RESULTS_AND_TEST_MATRIX.md)
+11. [x] **User Operating Manual:** [docs/07_USER_GUIDE.md](docs/07_USER_GUIDE.md)
+12. [x] **Presentation Defense Slides:** [docs/08_PRESENTATION_SLIDES_OUTLINE.md](docs/08_PRESENTATION_SLIDES_OUTLINE.md)
+13. [x] **Live Demonstration Video Script:** [docs/09_LIVE_DEMO_SCRIPT.md](docs/09_LIVE_DEMO_SCRIPT.md)

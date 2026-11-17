@@ -1,27 +1,36 @@
-*.log
-.DS_Store
+# Dependencies
+vendor/
+**/vendor/
+node_modules/
+**/node_modules/
+
+# Environment
 .env
 .env.backup
 .env.production
-.phpactor.json
-.phpunit.result.cache
-/.codex
-/.cursor/
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
-/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+
+# Build & Dist
+dist/
+**/dist/
 /public/build
-/public/fonts-manifest.dev.json
 /public/hot
 /public/storage
-/storage/*.key
-/storage/pail
-/vendor
-_ide_helper.php
-Homestead.json
-Homestead.yaml
+
+# Storage & Logs
+*.log
+**/storage/logs/*.log
+**/storage/framework/cache/data/*
+**/storage/framework/sessions/*
+**/storage/framework/views/*
+storage/*.key
+
+# IDE & OS
+.DS_Store
 Thumbs.db
+.idea/
+.vscode/
+.phpunit.result.cache
+.phpunit.cache

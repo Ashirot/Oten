@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Supplier;
+use Illuminate\Http\Request;
+
+class SupplierController extends Controller
+{
+    public function index()
+    {
+        $suppliers = Supplier::withCount('products')->get();
+        return response()->json($suppliers);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:150',
+            'contact_person' => 'required|string|max:100',
+            'phone' => 'required|string|max:50',
+            'email' => 'nullable|email|max:100',
+            'address' => 'nullable|string',
+        ]);
+
+        $supplier = Supplier::create($validated);
+        return response()->json($supplier, 201);
+    }
+
+    public function update(Request $request, Supplier $supplier)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:150',
+            'contact_person' => 'required|string|max:100',
+            'phone' => 'required|string|max:50',
+            'email' => 'nullable|email|max:100',
+            'address' => 'nullable|string',
+        ]);
+
+        $supplier->update($validated);
+        return response()->json($supplier);
+    }
+
+    public function destroy(Supplier $supplier)
+    {
+        $supplier->delete();
+        return response()->json(['message' => 'Supplier removed successfully']);
+    }
+}

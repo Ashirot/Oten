@@ -147,10 +147,25 @@ export default function App() {
         loadData(); // refresh stock numbers
     };
 
+    const handleAuthSuccess = (loggedInUser) => {
+        setUser(loggedInUser);
+        if (loggedInUser.role === 'admin') {
+            setActiveView('admin');
+            showToast(`Directed to Admin & DB Control Center (${loggedInUser.name})`, 'success');
+        } else if (loggedInUser.role === 'staff') {
+            setActiveView('admin');
+            showToast(`Directed to Staff Operations Station (${loggedInUser.name})`, 'success');
+        } else {
+            setActiveView('storefront');
+            showToast(`Welcome ${loggedInUser.name}! Ready to order Davao Pastil.`, 'success');
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('pastil_auth_token');
         localStorage.removeItem('pastil_user');
         setUser(null);
+        setActiveView('storefront');
         showToast('Logged out successfully', 'info');
     };
 
@@ -188,12 +203,14 @@ export default function App() {
                     />
                 ) : (
                     <Dashboard
+                        user={user}
                         products={products}
                         categories={categories}
                         suppliers={suppliers}
                         onRefreshAll={loadData}
                         showToast={showToast}
                         lowStockCount={lowStockCount}
+                        onBackToStorefront={() => setActiveView('storefront')}
                     />
                 )}
             </main>
@@ -241,7 +258,7 @@ export default function App() {
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
-                onAuthSuccess={(u) => setUser(u)}
+                onAuthSuccess={handleAuthSuccess}
                 showToast={showToast}
             />
 

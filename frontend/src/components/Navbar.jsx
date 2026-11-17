@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Shield, Store, User, LogOut, Database, AlertCircle } from 'lucide-react';
+import { ShoppingBag, Shield, Store, User, LogOut, Database, UserCheck, ShieldCheck } from 'lucide-react';
 
 export default function Navbar({
     activeView,
@@ -11,6 +11,10 @@ export default function Navbar({
     onLogout,
     lowStockCount = 0
 }) {
+    const isStaff = user?.role === 'staff';
+    const isAdmin = user?.role === 'admin';
+    const isCustomer = user?.role === 'customer';
+
     return (
         <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,7 +37,7 @@ export default function Navbar({
                         </div>
                     </div>
 
-                    {/* View Switcher Pills */}
+                    {/* View Switcher Pills (Role-Aware) */}
                     <div className="hidden md:flex items-center p-1 bg-stone-100 rounded-xl border border-stone-200">
                         <button
                             onClick={() => setActiveView('storefront')}
@@ -46,22 +50,59 @@ export default function Navbar({
                             <Store className="w-4 h-4 text-amber-600" />
                             Storefront
                         </button>
-                        <button
-                            onClick={() => setActiveView('admin')}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all relative ${
-                                activeView === 'admin'
-                                    ? 'bg-white text-stone-900 shadow-xs font-bold'
-                                    : 'text-stone-600 hover:text-stone-900'
-                            }`}
-                        >
-                            <Shield className="w-4 h-4 text-orange-600" />
-                            Management & DB Dashboard
-                            {lowStockCount > 0 && (
-                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                                    {lowStockCount}
-                                </span>
-                            )}
-                        </button>
+
+                        {/* If Admin: show Admin & DB Dashboard button */}
+                        {isAdmin && (
+                            <button
+                                onClick={() => setActiveView('admin')}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all relative ${
+                                    activeView === 'admin'
+                                        ? 'bg-purple-600 text-white shadow-xs font-bold'
+                                        : 'text-stone-600 hover:text-stone-900'
+                                }`}
+                            >
+                                <ShieldCheck className="w-4 h-4" />
+                                Admin & DB Control
+                                {lowStockCount > 0 && (
+                                    <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                                        {lowStockCount}
+                                    </span>
+                                )}
+                            </button>
+                        )}
+
+                        {/* If Staff: show Staff Operations button */}
+                        {isStaff && (
+                            <button
+                                onClick={() => setActiveView('admin')}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all relative ${
+                                    activeView === 'admin'
+                                        ? 'bg-blue-600 text-white shadow-xs font-bold'
+                                        : 'text-stone-600 hover:text-stone-900'
+                                }`}
+                            >
+                                <UserCheck className="w-4 h-4" />
+                                Staff Operations
+                                {lowStockCount > 0 && (
+                                    <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                                        {lowStockCount}
+                                    </span>
+                                )}
+                            </button>
+                        )}
+
+                        {/* If not logged in: let them click Management & it prompts them or shows access */}
+                        {!user && (
+                            <button
+                                onClick={() => {
+                                    onOpenAuth();
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg text-stone-500 hover:text-stone-900 transition-all"
+                            >
+                                <Shield className="w-4 h-4 text-stone-400" />
+                                Staff / Admin Portal
+                            </button>
+                        )}
                     </div>
 
                     {/* Right Actions */}
@@ -124,15 +165,19 @@ export default function Navbar({
                         <Store className="w-3.5 h-3.5" />
                         Storefront
                     </button>
-                    <button
-                        onClick={() => setActiveView('admin')}
-                        className={`flex items-center gap-1.5 py-1 px-3 text-xs font-semibold rounded-md ${
-                            activeView === 'admin' ? 'bg-amber-500 text-white' : 'text-stone-600'
-                        }`}
-                    >
-                        <Shield className="w-3.5 h-3.5" />
-                        Management & DB
-                    </button>
+                    {(isAdmin || isStaff) && (
+                        <button
+                            onClick={() => setActiveView('admin')}
+                            className={`flex items-center gap-1.5 py-1 px-3 text-xs font-semibold rounded-md ${
+                                activeView === 'admin'
+                                    ? isAdmin ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                                    : 'text-stone-600'
+                            }`}
+                        >
+                            <Shield className="w-3.5 h-3.5" />
+                            {isAdmin ? 'Admin & DB' : 'Staff Operations'}
+                        </button>
+                    )}
                 </div>
             </div>
         </header>

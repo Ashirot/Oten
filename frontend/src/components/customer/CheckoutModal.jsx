@@ -10,8 +10,6 @@ export default function CheckoutModal({
     onOrderPlaced,
     showToast,
 }) {
-    if (!isOpen) return null;
-
     const [name, setName] = useState(user?.name || '');
     const [phone, setPhone] = useState(user?.phone || '');
     const [address, setAddress] = useState(user?.address || '');
@@ -28,6 +26,14 @@ export default function CheckoutModal({
     const hasDiscount = subtotal >= 500;
     const discountAmount = hasDiscount ? 50 : 0;
     const finalTotal = Math.max(0, subtotal - discountAmount);
+
+    // Keep customer details when a session is established or changed.
+    useEffect(() => {
+        if (!user) return;
+        setName(user.name || '');
+        setPhone(user.phone || '');
+        setAddress(user.address || '');
+    }, [user?.id]);
 
     // Initialize Leaflet Map
     useEffect(() => {
@@ -93,7 +99,6 @@ export default function CheckoutModal({
             delivery_landmark: landmark,
             delivery_instructions: instructions,
             payment_method: paymentMethod,
-            user_id: user?.id || null,
             items: cart.map((item) => ({
                 product_id: item.product.id,
                 quantity: item.quantity,
@@ -111,6 +116,10 @@ export default function CheckoutModal({
             setSubmitting(false);
         }
     };
+
+    // Hooks must execute in the same order whether the dialog is open or not.
+    // Closing doesn't discard the cart, so checkout can be reopened from Cart.
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn overflow-y-auto">
@@ -212,7 +221,7 @@ export default function CheckoutModal({
                                 <span className="text-xs font-bold text-stone-700">Davao City Live Dispatch GPS Map</span>
                                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                                    GPS Online
+                                    Map Preview
                                 </span>
                             </div>
                             <div
@@ -221,6 +230,10 @@ export default function CheckoutModal({
                             />
                         </div>
                     </div>
+
+                    <p className="text-xs text-stone-500">
+                        The map is a visual guide. Please enter your delivery address above; moving the marker does not automatically change it.
+                    </p>
 
                     {/* Payment Method */}
                     <div className="space-y-2 pt-2 border-t border-stone-100">
@@ -257,6 +270,10 @@ export default function CheckoutModal({
                         </div>
                     </div>
 
+                    <p className="text-xs text-stone-500">
+                        GCash and card options record your preferred payment method only. Payment remains pending until verified by the cashier; this demo does not charge your account.
+                    </p>
+
                     {/* Order Summary Breakdown */}
                     <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-2 text-xs">
                         <div className="font-bold text-stone-800 flex justify-between">
@@ -269,7 +286,7 @@ export default function CheckoutModal({
                         </div>
                         {hasDiscount && (
                             <div className="flex justify-between text-emerald-600 font-bold">
-                                <span>Free Delivery Discount</span>
+                                <span>₱500+ Order Promo</span>
                                 <span>-₱{discountAmount.toFixed(2)}</span>
                             </div>
                         )}

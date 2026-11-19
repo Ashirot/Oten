@@ -48,6 +48,8 @@ export const authApi = {
     register: (userData) => apiRequest('/auth/register', { method: 'POST', body: userData }),
     me: () => apiRequest('/auth/me'),
     logout: () => apiRequest('/auth/logout', { method: 'POST' }),
+    updateProfile: (details) => apiRequest('/auth/profile', { method: 'PATCH', body: details }),
+    changePassword: (details) => apiRequest('/auth/password', { method: 'PUT', body: details }),
 };
 
 // Products

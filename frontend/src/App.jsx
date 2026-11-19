@@ -8,11 +8,12 @@ import CheckoutModal from './components/customer/CheckoutModal';
 import OrderTrackerModal from './components/customer/OrderTrackerModal';
 import Dashboard from './components/admin/Dashboard';
 import AuthModal from './components/AuthModal';
-import { productsApi, categoriesApi, suppliersApi, reviewsApi, inventoryApi } from './services/api';
+import AccountSettingsModal from './components/AccountSettingsModal';
+import { authApi, ordersApi, productsApi, categoriesApi, suppliersApi, reviewsApi, inventoryApi } from './services/api';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 export default function App() {
-    const [activeView, setActiveView] = useState('storefront'); // 'storefront' or 'admin'
+    const [activeView, setActiveView] = useState('storefront'); // Home, menu, or staff dashboard
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
@@ -48,8 +49,20 @@ export default function App() {
     const [quantityProduct, setQuantityProduct] = useState(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-    const [trackedOrder, setTrackedOrder] = useState(null);
+    // Keep the latest receipt available when the tracker is closed or the tab reloads.
+    const [trackedOrder, setTrackedOrder] = useState(() => {
+        try {
+            const saved = sessionStorage.getItem('pastil_recent_order');
+            const receipt = saved ? JSON.parse(saved) : null;
+            return receipt && receipt.id && receipt.order_number && Array.isArray(receipt.items)
+                ? receipt : null;
+        } catch {
+            return null;
+        }
+    });
+    const [isTrackerOpen, setIsTrackerOpen] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Toast
     const [toast, setToast] = useState(null);
@@ -64,15 +77,44 @@ export default function App() {
         localStorage.setItem('pastil_cart', JSON.stringify(cart));
     }, [cart]);
 
+    useEffect(() => {
+        try {
+            if (trackedOrder) sessionStorage.setItem('pastil_recent_order', JSON.stringify(trackedOrder));
+            else sessionStorage.removeItem('pastil_recent_order');
+        } catch {
+            // Private browsing can block session storage; tracking still works in memory.
+        }
+    }, [trackedOrder]);
+
+    // Signed-in customers can receive new order statuses without refreshing.
+    useEffect(() => {
+        if (!isTrackerOpen || !trackedOrder?.id || user?.role !== 'customer'
+            || Number(trackedOrder.user_id) !== Number(user.id)) return;
+
+        let cancelled = false;
+        const refresh = async () => {
+            try {
+                const latest = await ordersApi.getOne(trackedOrder.id);
+                if (!cancelled) setTrackedOrder(latest);
+            } catch (error) {
+                // Keep the saved receipt visible if the network is temporarily unavailable.
+                console.warn('Could not refresh order status:', error.message);
+            }
+        };
+        refresh();
+        const timer = setInterval(refresh, 15000);
+        return () => { cancelled = true; clearInterval(timer); };
+    }, [isTrackerOpen, trackedOrder?.id, trackedOrder?.user_id, user?.id, user?.role]);
+
     // Initial data fetch
     const loadData = async () => {
         try {
             const [prods, cats, sups, revs, lowAlerts] = await Promise.all([
                 productsApi.getAll(),
                 categoriesApi.getAll(),
-                suppliersApi.getAll(),
+                ['admin', 'staff'].includes(user?.role) ? suppliersApi.getAll() : Promise.resolve([]),
                 reviewsApi.getAll(),
-                inventoryApi.getLowStock().catch(() => []),
+                ['admin', 'staff'].includes(user?.role) ? inventoryApi.getLowStock().catch(() => []) : Promise.resolve([]),
             ]);
 
             setProducts(prods || []);
@@ -87,6 +129,31 @@ export default function App() {
 
     useEffect(() => {
         loadData();
+    }, [user?.role]);
+
+    // Local storage is only a cache; the API determines the actual authenticated role.
+    useEffect(() => {
+        if (!localStorage.getItem('pastil_auth_token')) {
+            localStorage.removeItem('pastil_user');
+            setUser(null);
+            if (trackedOrder?.user_id) setTrackedOrder(null);
+            return;
+        }
+        let cancelled = false;
+        authApi.me().then((account) => {
+            if (cancelled) return;
+            setUser(account);
+            localStorage.setItem('pastil_user', JSON.stringify(account));
+            setActiveView(['admin', 'staff'].includes(account.role) ? 'admin' : 'storefront');
+        }).catch(() => {
+            if (cancelled) return;
+            localStorage.removeItem('pastil_auth_token');
+            localStorage.removeItem('pastil_user');
+            setUser(null);
+            if (trackedOrder?.user_id) setTrackedOrder(null);
+            setActiveView('storefront');
+        });
+        return () => { cancelled = true; };
     }, []);
 
     // Filtered products for storefront
@@ -106,6 +173,10 @@ export default function App() {
 
     // Cart actions
     const handleQuickAdd = (product) => {
+        if (Number(product.stock_quantity) <= 0) {
+            showToast('Sorry, this item is sold out.', 'error');
+            return;
+        }
         setQuantityProduct(product);
     };
 
@@ -143,7 +214,9 @@ export default function App() {
 
     const handleOrderPlaced = (newOrder) => {
         setCart([]);
+        setIsCheckoutOpen(false);
         setTrackedOrder(newOrder);
+        setIsTrackerOpen(true);
         loadData(); // refresh stock numbers
     };
 
@@ -162,11 +235,22 @@ export default function App() {
     };
 
     const handleLogout = () => {
+        if (localStorage.getItem('pastil_auth_token')) authApi.logout().catch(() => {});
         localStorage.removeItem('pastil_auth_token');
         localStorage.removeItem('pastil_user');
         setUser(null);
+        setIsTrackerOpen(false);
+        setTrackedOrder(null);
+        try { sessionStorage.removeItem('pastil_recent_order'); } catch {}
+        setIsSettingsOpen(false);
         setActiveView('storefront');
         showToast('Logged out successfully', 'info');
+    };
+
+    const handleAccountUpdated = (updated) => {
+        localStorage.setItem('pastil_user', JSON.stringify(updated));
+        setUser(updated);
+        showToast('Account settings saved', 'success');
     };
 
     const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -179,17 +263,22 @@ export default function App() {
                 setActiveView={setActiveView}
                 cartCount={totalCartCount}
                 onOpenCart={() => setIsCartOpen(true)}
+                lastOrder={trackedOrder}
+                onOpenTracker={() => setIsTrackerOpen(true)}
                 user={user}
                 onOpenAuth={() => setIsAuthModalOpen(true)}
+                onOpenSettings={() => setIsSettingsOpen(true)}
                 onLogout={handleLogout}
                 lowStockCount={lowStockCount}
             />
 
             {/* Main Content Area */}
             <main className="flex-1">
-                {activeView === 'storefront' ? (
+                {activeView !== 'admin' ? (
                     <Storefront
-                        products={filteredProducts}
+                        page={activeView === 'menu' ? 'menu' : 'home'}
+                        onNavigate={setActiveView}
+                        products={activeView === 'menu' ? filteredProducts : products}
                         categories={categories}
                         selectedCategory={selectedCategory}
                         setSelectedCategory={setSelectedCategory}
@@ -247,8 +336,8 @@ export default function App() {
             />
 
             <OrderTrackerModal
-                isOpen={!!trackedOrder}
-                onClose={() => setTrackedOrder(null)}
+                isOpen={isTrackerOpen && !!trackedOrder}
+                onClose={() => setIsTrackerOpen(false)}
                 order={trackedOrder}
                 user={user}
                 showToast={showToast}
@@ -260,6 +349,14 @@ export default function App() {
                 onClose={() => setIsAuthModalOpen(false)}
                 onAuthSuccess={handleAuthSuccess}
                 showToast={showToast}
+            />
+
+            <AccountSettingsModal
+                isOpen={isSettingsOpen}
+                user={user}
+                onClose={() => setIsSettingsOpen(false)}
+                onUpdated={handleAccountUpdated}
+                onLogout={handleLogout}
             />
 
             {/* Toast Banner */}

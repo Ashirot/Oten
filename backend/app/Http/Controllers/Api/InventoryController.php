@@ -40,7 +40,7 @@ class InventoryController extends Controller
             'notes' => 'nullable|string|max:255',
         ]);
 
-        $userId = auth()->id() ?? 1;
+        $userId = $request->user()->id;
         $notes = $validated['notes'] ?? 'Stock replenishment via admin';
 
         // Call MySQL Stored Procedure sp_RestockProduct

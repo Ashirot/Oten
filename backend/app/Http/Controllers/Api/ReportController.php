@@ -91,8 +91,8 @@ class ReportController extends Controller
                 c.id as category_id,
                 c.name as category_name,
                 COUNT(DISTINCT p.id) as product_count,
-                COALESCE(SUM(oi.quantity), 0) as total_units_sold,
-                COALESCE(SUM(oi.subtotal), 0.00) as category_revenue
+                COALESCE(SUM(CASE WHEN o.id IS NOT NULL THEN oi.quantity ELSE 0 END), 0) as total_units_sold,
+                COALESCE(SUM(CASE WHEN o.id IS NOT NULL THEN oi.subtotal ELSE 0 END), 0.00) as category_revenue
             FROM categories c
             LEFT JOIN products p ON c.id = p.category_id
             LEFT JOIN order_items oi ON p.id = oi.product_id
@@ -123,7 +123,6 @@ class ReportController extends Controller
                 fn_CalculateCustomerTotalSpent(u.id) as total_spent,
                 (SELECT COUNT(*) FROM orders WHERE user_id = u.id) as total_orders
             FROM users u
-            WHERE u.role = 'customer'
             ORDER BY total_spent DESC
         ");
 

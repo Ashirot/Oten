@@ -8,6 +8,7 @@ export default function OrderManagement({ showToast }) {
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -29,12 +30,36 @@ export default function OrderManagement({ showToast }) {
     }, [statusFilter]);
 
     const handleUpdateStatus = async (orderId, newStatus) => {
+        setUpdatingOrderId(orderId);
         try {
             await ordersApi.updateStatus(orderId, { order_status: newStatus });
             showToast?.(`Order updated to ${newStatus.toUpperCase()}`, 'success');
-            fetchOrders();
+            await fetchOrders();
         } catch (err) {
             showToast?.(err.message || 'Failed to update order status', 'error');
+        } finally {
+            setUpdatingOrderId(null);
+        }
+    };
+
+    const handleUpdatePayment = async (order, nextPaymentStatus) => {
+        const prompt = nextPaymentStatus === 'paid'
+            ? `Have you actually received payment for order ${order.order_number}? This will mark it as PAID.`
+            : `Has the refund for order ${order.order_number} actually been sent? This will mark it as REFUNDED.`;
+        if (!window.confirm(prompt)) return;
+
+        setUpdatingOrderId(order.id);
+        try {
+            await ordersApi.updateStatus(order.id, {
+                order_status: order.order_status,
+                payment_status: nextPaymentStatus,
+            });
+            showToast?.(`Payment recorded as ${nextPaymentStatus.toUpperCase()}`, 'success');
+            await fetchOrders();
+        } catch (err) {
+            showToast?.(err.message || 'Failed to update payment status', 'error');
+        } finally {
+            setUpdatingOrderId(null);
         }
     };
 
@@ -122,15 +147,41 @@ export default function OrderManagement({ showToast }) {
                                                     {ord.payment_method}
                                                 </div>
                                                 <span className={`inline-block text-[9px] font-extrabold uppercase px-1.5 rounded-sm ${
-                                                    ord.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                                    ord.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800'
+                                                        : ord.payment_status === 'cancelled' ? 'bg-red-100 text-red-800'
+                                                        : ord.payment_status === 'refunded' ? 'bg-violet-100 text-violet-800'
+                                                        : 'bg-amber-100 text-amber-800'
                                                 }`}>
                                                     {ord.payment_status}
                                                 </span>
+                                                {ord.payment_status === 'pending' && !isCancelled && (
+                                                    <button
+                                                        type="button"
+                                                        disabled={updatingOrderId === ord.id}
+                                                        onClick={() => handleUpdatePayment(ord, 'paid')}
+                                                        className="block mt-1.5 text-[10px] font-bold text-emerald-700 hover:underline disabled:opacity-50"
+                                                        title="Confirm a payment that staff has actually received"
+                                                    >
+                                                        Confirm Paid
+                                                    </button>
+                                                )}
+                                                {ord.payment_status === 'paid' && isCancelled && (
+                                                    <button
+                                                        type="button"
+                                                        disabled={updatingOrderId === ord.id}
+                                                        onClick={() => handleUpdatePayment(ord, 'refunded')}
+                                                        className="block mt-1.5 text-[10px] font-bold text-violet-700 hover:underline disabled:opacity-50"
+                                                        title="Record a refund that has already been issued"
+                                                    >
+                                                        Record Refund
+                                                    </button>
+                                                )}
                                             </td>
                                             <td className="py-3 px-4">
                                                 <select
                                                     value={ord.order_status}
                                                     onChange={(e) => handleUpdateStatus(ord.id, e.target.value)}
+                                                    disabled={updatingOrderId === ord.id}
                                                     className="px-2 py-1 bg-stone-50 border border-stone-200 rounded-lg text-xs font-bold text-stone-800 focus:ring-2 focus:ring-amber-500"
                                                 >
                                                     <option value="pending">Pending</option>

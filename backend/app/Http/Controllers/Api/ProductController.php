@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,8 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'supplier']);
+        $isEmployee = auth('sanctum')->user() instanceof Employee;
+        $query = Product::with($isEmployee ? ['category', 'supplier'] : ['category']);
 
         if ($request->filled('category')) {
             $cat = $request->input('category');
@@ -35,27 +37,35 @@ class ProductController extends Controller
             $query->where('is_active', true);
         }
 
-        $sort = $request->input('sort', 'id');
-        $direction = $request->input('direction', 'asc');
+        $sort = in_array($request->input('sort'), ['id', 'name', 'price', 'stock_quantity', 'created_at'], true)
+            ? $request->input('sort') : 'id';
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sort, $direction);
 
         $products = $query->get();
 
-        // Include computed stock status using MySQL UDF
+        // Compute simple status in memory; avoid an extra SQL call per product.
+        // The fn_GetProductStockStatus SQL function remains for DB demonstrations.
         $products->transform(function ($product) {
-            $product->stock_status = DB::selectOne(
-                "SELECT fn_GetProductStockStatus(?, ?) as status",
-                [$product->stock_quantity, $product->reorder_level]
-            )->status ?? 'IN_STOCK';
+            $product->stock_status = $product->stock_quantity <= 0
+                ? 'OUT_OF_STOCK'
+                : ($product->stock_quantity <= $product->reorder_level ? 'LOW_STOCK' : 'IN_STOCK');
             return $product;
         });
 
+        if (!$isEmployee) {
+            $products->each(fn ($product) => $product->makeHidden(['cost_price', 'supplier_id']));
+        }
         return response()->json($products);
     }
 
     public function show(Product $product)
     {
-        $product->load(['category', 'supplier', 'reviews.user', 'priceAudits']);
+        $isEmployee = auth('sanctum')->user() instanceof Employee;
+        $product->load($isEmployee
+            ? ['category', 'supplier', 'reviews.user', 'priceAudits']
+            : ['category', 'reviews.user:id,name,avatar']);
+        if (!$isEmployee) $product->makeHidden(['cost_price', 'supplier_id']);
         return response()->json($product);
     }
 
@@ -90,7 +100,7 @@ class ProductController extends Controller
             'stock_after' => $product->stock_quantity,
             'reference_type' => 'product_creation',
             'notes' => 'Product catalog initialized',
-            'performed_by' => auth()->id() ?? 1,
+            'performed_by' => $request->user()->id,
             'created_at' => now(),
         ]);
 
@@ -114,8 +124,16 @@ class ProductController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']);
 
-        // MySQL trigger trg_product_price_audit and trg_prevent_negative_stock will automatically execute on update!
-        $product->update($validated);
+        // Attribute trigger-created price audit rows to the employee who edited
+        // the product. Reset the connection variable even if update fails.
+        DB::transaction(function () use ($request, $product, $validated) {
+            DB::statement('SET @app_employee_id = ?', [$request->user()->id]);
+            try {
+                $product->update($validated);
+            } finally {
+                DB::statement('SET @app_employee_id = NULL');
+            }
+        });
 
         return response()->json($product->fresh()->load(['category', 'supplier']));
     }

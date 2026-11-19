@@ -45,25 +45,25 @@ npm run build
 ```
 
 #### Step 5: Launch Application
-Start the local Laravel development server:
+Start the local Laravel development server (from `backend`):
 ```bash
 php artisan serve
 ```
-Open your web browser and navigate to:
+In another terminal, run `npm install` and `npm run dev` from `frontend`. Open:
 ```text
-http://127.0.0.1:8000
+http://localhost:5173
 ```
 
 ---
 
 ### 3. Pre-configured Demo Accounts
 
-For instructor evaluation and testing, quick 1-click login buttons are integrated into the **Sign In** modal:
+For instructor evaluation and testing, local development (`npm run dev`) includes 1-click demo buttons in the account icon's **Sign In** modal. You can also select **Customer**, **Cashier**, or **Admin** and enter your credentials manually:
 
 | Role | Email Address | Password | Permissions & Features |
 | :--- | :--- | :--- | :--- |
 | **👑 Admin** | `admin@pastildavao.com` | `admin123` | Full access to Product CRUD, Restock Stored Procedure, Category/Supplier management, Reports, and Database Diagnostic Lab |
-| **💼 Staff** | `staff@pastildavao.com` | `staff123` | Order status progression (`preparing` &rarr; `out_for_delivery` &rarr; `delivered`), catalog inspection, stock alert monitoring |
+| **💼 Cashier (staff)** | `staff@pastildavao.com` | `staff123` | Order status progression (`preparing` &rarr; `out_for_delivery` &rarr; `delivered`), catalog inspection, stock alert monitoring |
 | **🛒 Customer** | `maria@example.com` | `password123` | Ordering menu items, checkout with Davao delivery address, live order tracker, rating and reviews submission |
 
 ---
@@ -71,7 +71,7 @@ For instructor evaluation and testing, quick 1-click login buttons are integrate
 ### 4. Customer Storefront Operations
 
 #### 4.1 Browsing Menu & Flavor Filtering
-1. On the homepage, navigate to the **Popular Davao Picks** menu section.
+1. Click **Menu** in the navbar or **Order Now** on the homepage to open the dedicated menu page.
 2. Filter pastil dishes by clicking category pills:
    - **All Flavors**
    - **Beef** (e.g. Beef Pastil)
@@ -80,13 +80,13 @@ For instructor evaluation and testing, quick 1-click login buttons are integrate
    - **Combo** (e.g. Combo Box, Family Pack Platter)
    - **Sides & Drinks** (e.g. Davao Calamansi Cooler, Spiced Sambal Jar)
 3. Use the search bar to find dishes by name or description.
-4. Each card displays real-time stock levels using the MySQL User-Defined Function `fn_GetProductStockStatus` (`In Stock`, `Low Stock`, or `Sold Out`).
+4. Each card displays a stock status calculated from the same threshold used by the MySQL function `fn_GetProductStockStatus` (`In Stock`, `Low Stock`, or `Sold Out`).
 
 #### 4.2 Adding Items to Cart
 1. Click the **Add** button or preview icon on any item card.
 2. Select your desired quantity in the **Quantity Picker Modal**.
 3. Click **Add to Cart**.
-4. The cart badge updates in the top navigation bar. Orders of ₱500 or more automatically receive a **₱50.00 Free Delivery Discount**.
+4. The cart badge updates in the top navigation bar. Orders of ₱500 or more automatically receive a **₱50.00 order discount**.
 
 #### 4.3 Checkout & Delivery Routing
 1. Open the Cart Drawer and click **Proceed to Checkout**.
@@ -96,15 +96,22 @@ For instructor evaluation and testing, quick 1-click login buttons are integrate
    - Detailed Davao Address (e.g., Matina, Lanang, Bajada, Toril, Poblacion)
    - Nearest Landmark
    - Rider Instructions
-3. Review the live interactive **Davao City GPS Delivery Map** showing the Poblacion Hub and delivery drop-off pin.
-4. Choose your payment method: **Cash on Delivery (COD)**, **GCash**, or **Card**.
+3. Review the Davao City **map preview** showing the Poblacion Hub and sample drop-off pin. Enter your actual address manually; the pin does not automatically fill the address.
+4. Choose your payment method: **Cash on Delivery (COD)**, **GCash**, or **Card**. This is a demo checkout; GCash/card are **not charged** and payment remains pending until marked verified.
 5. Click **Confirm & Place Order**. The backend executes an ACID transaction with pessimistic row-locking and triggers!
+6. If you close checkout, use the **Cart** icon in the navbar to reopen it; your items remain in the cart.
 
 #### 4.4 Live Order Tracking & Reviews
 1. Once placed, the **Live Order Tracker Modal** automatically opens.
 2. View current preparation stage:
    - `Order Placed` &rarr; `Cooking & Packing` &rarr; `Out for Delivery` &rarr; `Delivered`
-3. Rate your food quality using the 5-star rating picker and post feedback directly to the MySQL `reviews` table.
+3. Signed-in customers can rate their own orders using the 5-star picker and post feedback to `reviews`. Guests must sign in to review an account-linked order.
+
+#### 4.5 Account Settings
+1. Click the **account icon** at the top-right.
+2. Open **Account settings** to update display name, email, phone number, address or icon.
+3. Use **Change password** with your current password to protect the account; other sessions are revoked.
+4. Use **Sign out** from the menu or settings screen.
 
 ---
 

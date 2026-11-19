@@ -15,10 +15,18 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'phone',
         'address',
+        'avatar',
     ];
+
+    // Keep the customer role in API responses without a redundant DB column.
+    protected $appends = ['role'];
+
+    public function getRoleAttribute(): string
+    {
+        return 'customer';
+    }
 
     protected $hidden = [
         'password',
@@ -43,8 +51,4 @@ class User extends Authenticatable
         return $this->hasMany(Review::class);
     }
 
-    public function inventoryLogs()
-    {
-        return $this->hasMany(InventoryLog::class, 'performed_by');
-    }
 }

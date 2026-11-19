@@ -3,7 +3,7 @@
 > **Project Title:** Design and Development of a Database-Driven Information System  
 > **Course:** Database Systems 1 (Topic 2: Inventory and Sales Management System)  
 > **Architecture:** Decoupled Full-Stack Architecture  
-> - **Backend:** Laravel 11/12 REST API (`/backend`)  
+> - **Backend:** Laravel 13 REST API (`/backend`)  
 > - **Frontend:** ReactJS 19 with Tailwind CSS 4 (`/frontend`)  
 > - **Database:** MySQL 8.0 InnoDB Engine  
 > - **Documentation:** Academic Deliverables (`/docs`)  
@@ -14,13 +14,13 @@
 
 ```text
 Project/
-├── backend/                  # Laravel REST API Application (PHP 8.4)
+├── backend/                  # Laravel REST API Application (PHP 8.3+)
 │   ├── app/                  # Controllers, Models, Middleware
 │   ├── config/               # Database, CORS, Sanctum configuration
 │   ├── database/             # Migrations, Seeders, Raw SQL scripts
 │   │   ├── migrations/       # Schema, Check Constraints, Routines & Triggers
 │   │   ├── seeders/          # DatabaseSeeder with realistic master data
-│   │   └── sql/              # 5 Pure SQL deliverables (.sql)
+│   │   └── sql/              # Original DB 1 SQL reference scripts (legacy schema)
 │   ├── routes/               # api.php (40 REST endpoints)
 │   ├── .env                  # MySQL connection settings
 │   └── artisan               # Artisan CLI
@@ -59,13 +59,36 @@ Project/
 ```bash
 cd backend
 
-# Setup database (if first time)
-php artisan migrate:fresh --seed
+# First time (empty MySQL database, after configuring .env)
+composer install
+# Windows PowerShell: Copy-Item .env.example .env
+# Linux/macOS: cp .env.example .env
+# Set DB_CONNECTION=mysql and DB_DATABASE=pastil_rice_davao in .env
+php artisan key:generate
+php artisan migrate --seed
 
 # Start backend server
 php artisan serve
 ```
 Backend runs at: **http://127.0.0.1:8000**
+
+### Updating the existing database (your phpMyAdmin export)
+
+1. **Back up** `pastil_rice_davao` in phpMyAdmin using Export → SQL → Structure and data.
+2. Replace your old project code with this updated copy while preserving your private `backend/.env`.
+3. Verify `.env` has `DB_CONNECTION=mysql`, your correct host/port, and `DB_DATABASE=pastil_rice_davao`.
+4. Stop the API server, then run:
+
+```bash
+cd backend
+php artisan config:clear
+php artisan migrate
+php artisan serve
+```
+
+**Important:** Do **not** run `migrate:fresh`, `db:wipe`, or `migrate --seed` against a database that already contains your records. `migrate` applies just the new migration files and keeps existing data. The migration copies the old admin/staff accounts to `employees`, preserves hashed passwords and inventory audit references, and removes non-customer records from `users`. Refresh your browser or sign in again afterward.
+
+The original `backend/database/sql/01_schema_and_seed.sql` and other SQL lesson scripts represent the **original** database state. They are retained as historical coursework examples, not as update scripts. **Do not import/re-run them over your upgraded database.** The authoritative schema is in Laravel migrations and `docs/02_DATABASE_DESIGN_AND_ERD.md`.
 
 ### 2. Start Frontend (ReactJS + Tailwind CSS)
 In a new terminal window:
@@ -83,10 +106,24 @@ Frontend runs at: **http://127.0.0.1:5173**
 ---
 
 ## 🔑 1-Click Evaluation Accounts
-In the frontend navbar, click **Sign In** and use the 1-click evaluation buttons:
+During local development (`npm run dev`), click the account icon and use the 1-click evaluation buttons. In production builds, the demo shortcuts are hidden; choose the correct account type in the regular sign-in form:
 - **👑 Admin:** `admin@pastildavao.com` / `admin123` (Full catalog, stored procedure restocking, business reports, database laboratory)
-- **💼 Staff:** `staff@pastildavao.com` / `staff123` (Order fulfillment stage updates, catalog inspection)
+- **💼 Cashier (staff):** `staff@pastildavao.com` / `staff123` (Order fulfillment stage updates, catalog inspection)
 - **🛒 Customer:** `maria@example.com` / `password123` (Menu ordering, checkout with Davao City GPS delivery map, review submission)
+
+---
+
+## Changes in this version
+
+- Dedicated **Home** and **Menu** views; closing checkout doesn't lose the cart or prevent reopening it.
+- Account icon / settings to update name, email, phone, delivery address, avatar, and password, plus logout.
+- Public Staff/Admin Portal link removed; employees see management options only after signing in.
+- New **employees** table with admin/staff accounts; `users` is now customers only. Inventory logs/price audit authors reference employees.
+- Staff/admin API endpoints require valid employee Sanctum tokens, and customer order/review access is scoped to the signed-in customer.
+- Improved sales and product performance views (multi-item orders are not double-counted), indexes for order history and reviews, and fewer per-product SQL queries.
+- GCash/card choices remain demonstration methods, **not live payments**; payment status stays pending until verified.
+
+For production deployment, remove/disable the local demo login accounts, require unique private employee passwords, and connect a real payment provider before accepting online payments.
 
 ---
 

@@ -32,6 +32,11 @@ class ProductPriceAudit extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'changed_by');
+        return $this->belongsTo(Employee::class, 'changed_by');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'changed_by');
     }
 }

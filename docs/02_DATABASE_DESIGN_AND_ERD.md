@@ -7,7 +7,7 @@
 ---
 
 ### 1. Business Rules
-1. **Users & Roles:** Every registered user has a unique email address and exactly one role: `admin`, `staff`, or `customer`.
+1. **Customer and Employee Accounts:** The `users` table contains customers only. The `employees` table holds admin and cashier/staff login records, with a role of `admin` or `staff`. Both authenticate using Laravel Sanctum.
 2. **Product Categorization:** Every product must belong to exactly one category (e.g., Beef, Chicken, Seafood, Combo, Sides & Drinks). A category cannot be deleted if active products reference it (`ON DELETE RESTRICT`).
 3. **Suppliers & Sourcing:** A product may be sourced from an authorized supplier or prepared in-house. If a supplier record is removed, the product's `supplier_id` is set to `NULL` (`ON DELETE SET NULL`) rather than deleting the product.
 4. **Non-Negative Constraints:**
@@ -29,8 +29,8 @@
 erDiagram
     USERS ||--o{ ORDERS : "places"
     USERS ||--o{ REVIEWS : "writes"
-    USERS ||--o{ INVENTORY_LOGS : "performs"
-    USERS ||--o{ PRODUCT_PRICE_AUDITS : "authorizes"
+    EMPLOYEES ||--o{ INVENTORY_LOGS : "performs"
+    EMPLOYEES ||--o{ PRODUCT_PRICE_AUDITS : "authorizes"
     
     CATEGORIES ||--o{ PRODUCTS : "classifies"
     SUPPLIERS ||--o{ PRODUCTS : "supplies"
@@ -48,10 +48,21 @@ erDiagram
         string name
         string email UK
         string password
+        string phone
+        text address
+        string avatar
+        timestamp created_at
+    }
+
+    EMPLOYEES {
+        bigint id PK
+        string name
+        string email UK
+        string password
         enum role
         string phone
         text address
-        timestamp created_at
+        string avatar
     }
 
     CATEGORIES {
@@ -146,7 +157,12 @@ erDiagram
 ### 3. Relational Schema
 ```text
 USERS (
-    id [PK], name, email [UQ], password, role, phone, address, created_at, updated_at
+    id [PK], name, email [UQ], password, phone, address, avatar, created_at, updated_at
+)
+
+EMPLOYEES (
+    id [PK], name, email [UQ], password, role [admin/staff], phone, address,
+    avatar, created_at, updated_at
 )
 
 CATEGORIES (
@@ -179,7 +195,7 @@ ORDER_ITEMS (
 INVENTORY_LOGS (
     id [PK], product_id [FK -> PRODUCTS.id ON DELETE CASCADE], movement_type,
     quantity, stock_before, stock_after, reference_type, reference_id,
-    notes, performed_by [FK -> USERS.id], created_at
+    notes, performed_by [FK -> EMPLOYEES.id], created_at
 )
 
 REVIEWS (
@@ -189,7 +205,7 @@ REVIEWS (
 
 PRODUCT_PRICE_AUDITS (
     id [PK], product_id [FK -> PRODUCTS.id], old_price, new_price,
-    changed_at, changed_by [FK -> USERS.id]
+    changed_at, changed_by [FK -> EMPLOYEES.id]
 )
 ```
 
@@ -237,12 +253,24 @@ An unnormalized food sales log originally combined order headers, customer attri
 | `email` | VARCHAR(150) | NO | UK | None | Unique login email address |
 | `email_verified_at` | TIMESTAMP | YES | | NULL | Verification timestamp |
 | `password` | VARCHAR(255) | NO | | None | Bcrypt password hash |
-| `role` | ENUM | NO | | 'customer' | 'admin', 'staff', 'customer' |
 | `phone` | VARCHAR(30) | YES | | NULL | Contact mobile number |
 | `address` | TEXT | YES | | NULL | Default delivery address |
+| `avatar` | VARCHAR(30) | NO | | 'user' | Chosen account icon |
 | `remember_token` | VARCHAR(100) | YES | | NULL | Sanctum / session remember token |
 | `created_at` | TIMESTAMP | YES | | CURRENT | Account creation timestamp |
 | `updated_at` | TIMESTAMP | YES | | CURRENT | Last update timestamp |
+
+#### Additional account table: `employees`
+| Column | Type | Meaning |
+| :--- | :--- | :--- |
+| `id` | BIGINT UNSIGNED PRIMARY KEY | Employee ID, independent of customer IDs |
+| `name` | VARCHAR(255) | Employee display name |
+| `email` | VARCHAR(255) UNIQUE | Employee login |
+| `password` | VARCHAR(255) | Hashed password |
+| `role` | ENUM('admin','staff') | Employee authorization role |
+| `phone` / `address` | VARCHAR(30) / TEXT | Contact details |
+| `avatar` | VARCHAR(30) | Account icon |
+| `created_at` / `updated_at` | TIMESTAMP | Audit timestamps |
 
 #### Table 2: `categories`
 | Column Name | Data Type | Nullable | Key | Default | Description & Constraints |
@@ -330,7 +358,7 @@ An unnormalized food sales log originally combined order headers, customer attri
 | `reference_type`| VARCHAR(50) | YES | | NULL | Source (e.g. 'order', 'restock') |
 | `reference_id` | BIGINT UNSIGNED| YES | | NULL | Associated order or shipment ID |
 | `notes` | VARCHAR(255) | YES | | NULL | Human or trigger memo |
-| `performed_by` | BIGINT UNSIGNED| YES | FK | NULL | References `users(id)` |
+| `performed_by` | BIGINT UNSIGNED| YES | FK | NULL | References `employees(id)` |
 | `created_at` | TIMESTAMP | NO | | CURRENT | Immutable event timestamp |
 
 #### Table 8: `reviews`
@@ -353,4 +381,4 @@ An unnormalized food sales log originally combined order headers, customer attri
 | `old_price` | DECIMAL(10,2) | NO | | None | Previous selling price |
 | `new_price` | DECIMAL(10,2) | NO | | None | New selling price |
 | `changed_at` | TIMESTAMP | NO | | CURRENT | Automatic audit timestamp |
-| `changed_by` | BIGINT UNSIGNED| YES | FK | NULL | References `users(id)` |
+| `changed_by` | BIGINT UNSIGNED| YES | FK | NULL | References `employees(id)` |

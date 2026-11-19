@@ -13,7 +13,7 @@ class DatabaseToolsController extends Controller
      */
     public function getSystemSchema()
     {
-        $tables = ['users', 'categories', 'suppliers', 'products', 'orders', 'order_items', 'inventory_logs', 'reviews', 'product_price_audits'];
+        $tables = ['users', 'employees', 'categories', 'suppliers', 'products', 'orders', 'order_items', 'inventory_logs', 'reviews', 'product_price_audits'];
         $dictionary = [];
 
         foreach ($tables as $table) {

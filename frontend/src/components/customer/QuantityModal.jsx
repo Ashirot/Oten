@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 
 export default function QuantityModal({ product, onClose, onConfirmAdd }) {
-    if (!product) return null;
-
     const [qty, setQty] = useState(1);
-    const maxQty = Math.max(1, product.stock_quantity);
+    const maxQty = Math.max(1, product?.stock_quantity || 1);
+    useEffect(() => {
+        setQty(1);
+    }, [product?.id]);
 
     const handleIncrement = () => {
         if (qty < maxQty) setQty((prev) => prev + 1);
@@ -15,7 +16,9 @@ export default function QuantityModal({ product, onClose, onConfirmAdd }) {
         if (qty > 1) setQty((prev) => prev - 1);
     };
 
-    const totalPrice = product.price * qty;
+    const totalPrice = (product?.price || 0) * qty;
+
+    if (!product) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">

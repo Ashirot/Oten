@@ -95,8 +95,8 @@ SELECT
     (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) AS total_orders_count,
     (SELECT AVG(rating) FROM reviews r WHERE r.user_id = u.id) AS average_satisfaction_rating,
     (SELECT comment FROM reviews r WHERE r.user_id = u.id ORDER BY r.id DESC LIMIT 1) AS latest_feedback
-FROM users u
-WHERE u.role = 'customer';
+FROM users u;
+-- The upgraded users table contains customers only; no role filter needed.
 
 -- ----------------------------------------------------------------------------
 -- 4. SET OPERATIONS: UNION / UNION ALL

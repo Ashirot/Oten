@@ -6,6 +6,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, showToast })
     const [mode, setMode] = useState('login'); // 'login' or 'register'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loginAs, setLoginAs] = useState('customer');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
@@ -22,7 +23,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, showToast })
         try {
             let res;
             if (mode === 'login') {
-                res = await authApi.login({ email, password });
+                res = await authApi.login({ email, password, login_as: loginAs });
             } else {
                 res = await authApi.register({ name, email, password, phone, address });
             }
@@ -39,14 +40,15 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, showToast })
         }
     };
 
-    const handleDemoLogin = async (demoEmail, demoPassword) => {
+    const handleDemoLogin = async (demoEmail, demoPassword, role) => {
         setEmail(demoEmail);
         setPassword(demoPassword);
+        setLoginAs(role);
         setLoading(true);
         setError(null);
 
         try {
-            const res = await authApi.login({ email: demoEmail, password: demoPassword });
+            const res = await authApi.login({ email: demoEmail, password: demoPassword, login_as: role });
             localStorage.setItem('pastil_auth_token', res.token);
             localStorage.setItem('pastil_user', JSON.stringify(res.user));
             showToast?.(`Logged in as ${res.user.role.toUpperCase()}: ${res.user.name}`, 'success');
@@ -117,29 +119,29 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, showToast })
                     )}
 
                     {/* Quick Demo Logins */}
-                    {mode === 'login' && (
+                    {mode === 'login' && import.meta.env.DEV && (
                         <div className="mb-5 p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl">
                             <div className="text-xs font-bold text-amber-900 mb-2 flex items-center justify-between">
-                                <span>⚡ 1-Click Demo Accounts (Database Grader)</span>
+                                <span>⚡ Quick Demo Sign In (Local Development)</span>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => handleDemoLogin('admin@pastildavao.com', 'admin123')}
+                                    onClick={() => handleDemoLogin('admin@pastildavao.com', 'admin123', 'admin')}
                                     className="px-2 py-1.5 bg-white hover:bg-amber-100 text-purple-700 font-bold text-xs rounded-lg border border-purple-200 shadow-xs transition-all text-center"
                                 >
                                     👑 Admin
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => handleDemoLogin('staff@pastildavao.com', 'staff123')}
+                                    onClick={() => handleDemoLogin('staff@pastildavao.com', 'staff123', 'staff')}
                                     className="px-2 py-1.5 bg-white hover:bg-amber-100 text-blue-700 font-bold text-xs rounded-lg border border-blue-200 shadow-xs transition-all text-center"
                                 >
-                                    💼 Staff
+                                    💼 Cashier
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => handleDemoLogin('maria@example.com', 'password123')}
+                                    onClick={() => handleDemoLogin('maria@example.com', 'password123', 'customer')}
                                     className="px-2 py-1.5 bg-white hover:bg-amber-100 text-emerald-700 font-bold text-xs rounded-lg border border-emerald-200 shadow-xs transition-all text-center"
                                 >
                                     🛒 Customer
@@ -149,6 +151,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, showToast })
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {mode === 'login' && (
+                            <div>
+                                <div className="text-xs font-bold text-stone-700 mb-2">Sign in as</div>
+                                <div className="grid grid-cols-3 gap-2" role="group" aria-label="Account type">
+                                    {[
+                                        ['customer', 'Customer'], ['staff', 'Cashier'], ['admin', 'Admin'],
+                                    ].map(([value, label]) => (
+                                        <button key={value} type="button" aria-pressed={loginAs === value}
+                                            onClick={() => { setLoginAs(value); setError(null); }}
+                                            className={`px-2 py-2 rounded-xl border text-xs font-extrabold transition-colors ${loginAs === value ? 'bg-amber-100 text-amber-900 border-amber-500' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {mode === 'register' && (
                             <>
                                 <div>
@@ -218,6 +236,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, showToast })
                                 <input
                                     type="password"
                                     required
+                                        minLength={mode === 'register' ? 8 : undefined}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"

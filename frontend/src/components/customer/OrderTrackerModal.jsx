@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, CheckCircle, Clock, Truck, UtensilsCrossed, Star, MapPin, Send } from 'lucide-react';
 import { reviewsApi } from '../../services/api';
 
@@ -10,13 +10,17 @@ export default function OrderTrackerModal({
     showToast,
     onOrderReviewSubmitted,
 }) {
-    if (!isOpen || !order) return null;
-
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState('');
     const [reviewSubmitted, setReviewSubmitted] = useState(false);
     const [submittingReview, setSubmittingReview] = useState(false);
+
+    useEffect(() => {
+        setRating(5);
+        setComment('');
+        setReviewSubmitted(false);
+    }, [order?.id]);
 
     const stages = [
         { key: 'pending', label: 'Order Placed', icon: Clock },
@@ -35,7 +39,7 @@ export default function OrderTrackerModal({
         }
     };
 
-    const currentStageIdx = getStageIndex(order.order_status);
+    const currentStageIdx = getStageIndex(order?.order_status);
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
@@ -45,17 +49,18 @@ export default function OrderTrackerModal({
                 order_id: order.id,
                 rating,
                 comment,
-                user_id: user?.id || order.user_id,
             });
             setReviewSubmitted(true);
             showToast?.('Thank you for rating your pastil meal!', 'success');
             onOrderReviewSubmitted?.();
         } catch (err) {
-            showToast?.('Failed to submit review', 'error');
+            showToast?.(err.message || 'Failed to submit review', 'error');
         } finally {
             setSubmittingReview(false);
         }
     };
+
+    if (!isOpen || !order) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn overflow-y-auto">
@@ -146,7 +151,7 @@ export default function OrderTrackerModal({
                         </div>
 
                         <div className="pt-2 border-t border-stone-200 flex justify-between text-sm font-black text-stone-900">
-                            <span>Total Paid</span>
+                            <span>Total Due</span>
                             <span className="text-amber-600">₱{Number(order.total_amount).toFixed(2)}</span>
                         </div>
                     </div>
@@ -172,7 +177,11 @@ export default function OrderTrackerModal({
                             <span className="text-[10px] text-stone-400">Stores directly to MySQL</span>
                         </div>
 
-                        {reviewSubmitted ? (
+                        {!user || user.role !== 'customer' || order.user_id !== user.id ? (
+                            <div className="p-3 bg-amber-50 text-amber-900 rounded-xl border border-amber-200 text-xs">
+                                Sign in as the customer who placed this order to leave a review.
+                            </div>
+                        ) : reviewSubmitted ? (
                             <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold text-center">
                                 ✨ Review submitted! Thank you for supporting Pastil Rice Davao.
                             </div>

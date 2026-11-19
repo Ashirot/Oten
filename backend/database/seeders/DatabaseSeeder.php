@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Employee;
 use App\Models\User;
 
 class DatabaseSeeder extends Seeder
@@ -14,8 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Seed Users
-        $admin = User::create([
+        // 1. Seed employees separately from customer accounts.
+        $admin = Employee::create([
             'name' => 'Admin Manager',
             'email' => 'admin@pastildavao.com',
             'password' => Hash::make('admin123'),
@@ -24,7 +25,7 @@ class DatabaseSeeder extends Seeder
             'address' => 'Claveria St, Poblacion District, Davao City',
         ]);
 
-        $staff = User::create([
+        $staff = Employee::create([
             'name' => 'Staff Cashier',
             'email' => 'staff@pastildavao.com',
             'password' => Hash::make('staff123'),
@@ -37,7 +38,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Maria C.',
             'email' => 'maria@example.com',
             'password' => Hash::make('password123'),
-            'role' => 'customer',
             'phone' => '09201112233',
             'address' => 'Matina Aplaya, Davao City',
         ]);
@@ -46,7 +46,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Rafael T.',
             'email' => 'rafael@example.com',
             'password' => Hash::make('password123'),
-            'role' => 'customer',
             'phone' => '09223334455',
             'address' => 'Lanang, Davao City',
         ]);
@@ -55,7 +54,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Jessa P.',
             'email' => 'jessa@example.com',
             'password' => Hash::make('password123'),
-            'role' => 'customer',
             'phone' => '09195556677',
             'address' => 'Toril, Davao City',
         ]);

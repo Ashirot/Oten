@@ -38,6 +38,11 @@ class InventoryLog extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'performed_by');
+        return $this->belongsTo(Employee::class, 'performed_by');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'performed_by');
     }
 }

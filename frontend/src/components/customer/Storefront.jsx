@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Star, ShoppingBag, Eye, Search, Filter, ArrowRight, ShieldCheck, Clock, ThumbsUp, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Storefront({
+    page = 'home',
+    onNavigate,
     products = [],
     categories = [],
     selectedCategory,
@@ -29,7 +31,9 @@ export default function Storefront({
     const activeHeroItem = heroShowcaseItems[showcaseIndex] || products[0];
 
     return (
-        <div className="space-y-16 pb-20">
+        <div className={`space-y-16 pb-20 ${page === 'menu' ? 'pt-12' : ''}`}>
+            {page === 'home' && (
+                <>
             {/* 1. Hero Section */}
             <section className="relative overflow-hidden bg-gradient-to-b from-amber-500/10 via-amber-500/5 to-transparent pt-10 pb-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,17 +52,18 @@ export default function Storefront({
                             </h1>
                             <p className="text-lg text-stone-600 max-w-xl leading-relaxed">
                                 Crispy, savory, and generously packed native kagikit on steaming fragrant rice.
-                                Powered by a relational database system with transaction management and inventory integrity.
+                                Order your favorite Davao pastil in just a few taps, with freshly made meals and hassle-free delivery.
                             </p>
 
                             <div className="flex flex-wrap gap-4 pt-2">
-                                <a
-                                    href="#menu"
+                                <button
+                                    type="button"
+                                    onClick={() => onNavigate('menu')}
                                     className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-700 hover:to-orange-600 text-white font-bold text-base shadow-lg shadow-orange-500/25 transition-all hover:scale-[1.02]"
                                 >
                                     <span>Order Now</span>
                                     <ArrowRight className="w-5 h-5" />
-                                </a>
+                                </button>
                                 <a
                                     href="#about"
                                     className="inline-flex items-center px-6 py-3.5 rounded-2xl bg-white hover:bg-stone-100 text-stone-800 font-bold text-base border border-stone-200 shadow-xs transition-colors"
@@ -70,12 +75,12 @@ export default function Storefront({
                             {/* Trust Stats */}
                             <div className="grid grid-cols-3 gap-6 pt-6 border-t border-stone-200/80">
                                 <div>
-                                    <div className="text-2xl font-extrabold text-stone-900">2,500+</div>
-                                    <div className="text-xs font-medium text-stone-500">Pastil Orders Delivered</div>
+                                    <div className="text-2xl font-extrabold text-stone-900">{products.length}+</div>
+                                    <div className="text-xs font-medium text-stone-500">Pastil Menu Picks</div>
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-extrabold text-stone-900">30 Min</div>
-                                    <div className="text-xs font-medium text-stone-500">Fast Davao Delivery</div>
+                                    <div className="text-2xl font-extrabold text-stone-900">Davao</div>
+                                    <div className="text-xs font-medium text-stone-500">Local Delivery</div>
                                 </div>
                                 <div>
                                     <div className="text-2xl font-extrabold text-amber-600 flex items-center gap-1">
@@ -163,7 +168,7 @@ export default function Storefront({
                         </div>
                         <div>
                             <div className="font-extrabold text-base">Free Delivery</div>
-                            <div className="text-xs text-amber-100">Across Davao City for orders ₱500 and above</div>
+                            <div className="text-xs text-amber-100">Free delivery + ₱50 off orders ₱500 and above</div>
                         </div>
                     </div>
 
@@ -189,6 +194,11 @@ export default function Storefront({
                 </div>
             </section>
 
+                </>
+            )}
+
+            {page === 'menu' && (
+                <>
             {/* 3. Menu Section */}
             <section id="menu" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
                 <div className="text-center max-w-2xl mx-auto mb-10 space-y-3">
@@ -357,7 +367,11 @@ export default function Storefront({
                     </div>
                 )}
             </section>
+                </>
+            )}
 
+            {page === 'home' && (
+                <>
             {/* 4. Why Choose Us Section */}
             <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
                 <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -477,9 +491,11 @@ export default function Storefront({
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 border-t border-stone-800 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>© 2026 Pastil Rice Davao. Database Systems 1 Final Project.</div>
-                    <div className="font-medium">Laravel 11 • ReactJS • Tailwind CSS • MySQL 8.0</div>
+                    <div className="font-medium">Laravel 13 • ReactJS • Tailwind CSS • MySQL 8.0</div>
                 </div>
             </footer>
+                </>
+            )}
         </div>
     );
 }

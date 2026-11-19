@@ -2,6 +2,9 @@
 -- FINAL PROJECT - DATABASE SYSTEMS 1
 -- Project Title: Pastil Rice Davao: Database-Driven Ordering, Inventory, and Sales Management System
 -- File: 01_schema_and_seed.sql
+-- HISTORICAL COURSEWORK ONLY (pre-employee separation).
+-- WARNING: THIS SCRIPT DROPS TABLES. DO NOT RUN IT AGAINST AN EXISTING
+-- DATABASE. For the current application, use php artisan migrate instead.
 -- Platform: MySQL 8.0+
 -- Description: Complete Database Creation, DDL Schema with Constraints, and Realistic Seed Data
 -- ============================================================================
